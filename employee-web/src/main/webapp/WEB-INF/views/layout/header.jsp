@@ -1,3 +1,3 @@
 <h1>
-    <a href="${pageContext.request.contextPath}/">employee</a>
+    <a href="${pageContext.request.contextPath}/">Employee Management System</a>
 </h1>

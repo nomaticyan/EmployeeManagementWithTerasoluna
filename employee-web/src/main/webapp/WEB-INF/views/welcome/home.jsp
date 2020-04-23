@@ -21,6 +21,7 @@
         </p>
         <ul>
             <li><a href="${pageContext.request.contextPath}/account">view account</a></li>
+            <li><a href="${pageContext.request.contextPath}/employee">Employee Management</a></li>
         </ul>
     </div>
 </body>
