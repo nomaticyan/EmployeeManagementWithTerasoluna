@@ -11,7 +11,6 @@
 
 <body>
     <div id="wrapper">
-        <h1>Hello world!</h1>
         <p>The time on the server is ${serverTime}.</p>
         <p>Welcome ${f:h(account.firstName)} ${f:h(account.lastName)} !!</p>
         <p>
