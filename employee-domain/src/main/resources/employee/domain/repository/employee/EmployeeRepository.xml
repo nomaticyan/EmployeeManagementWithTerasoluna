@@ -78,12 +78,12 @@
  		VALUES 
  		(#{employeeId}, 
   		#{employeeName}, 
- 		 #{birthdate}, 
+  		to_date(#{birthdate}, 'MM DD YYYY'), 
  		 #{gender}, 
  		 #{maritalStatus}, 
  		 #{levelId}::INTEGER, 
  		 #{departmentId}::INTEGER, 
- 		 #{joinDate}, 
+ 		 to_date(#{joinDate}, 'MM DD YYYY'),  
  		 #{positionId}::INTEGER, 
  		 #{email}, 
  		 #{phone});

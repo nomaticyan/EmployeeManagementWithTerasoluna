@@ -4,6 +4,21 @@
 <title>Login Page</title>
 <link rel="stylesheet"
 	href="${pageContext.request.contextPath}/resources/app/css/styles.css">
+<style>
+#login {
+	border-radius: 12px;
+	background-color: #4CAF50; /* Green */
+	border: none;
+	color: white;
+	text-align: center;
+	text-decoration: none;
+	display: inline-block;
+	margin: 4px 2px;
+	cursor: pointer;
+	height: 40px;
+	width: 100px;
+}
+</style>    	
 </head>
 <body>
 	<div id="wrapper">
@@ -23,20 +38,20 @@
 		<form:form action="${pageContext.request.contextPath}/login">
 			<table>
 				<tr>
-					<td><label for="username">User:</label></td>
+					<td><label for="username">User ID</label></td>
 					<td><input type="text" id="username" name="username"
 						value='demo'>(demo)</td>
 					<!-- (4) -->
 				</tr>
 				<tr>
-					<td><label for="password">Password:</label></td>
+					<td><label for="password">Password</label></td>
 					<td><input type="password" id="password" name="password"
 						value="demo" />(demo)</td>
 					<!-- (5) -->
 				</tr>
 				<tr>
 					<td>&nbsp;</td>
-					<td><input name="submit" type="submit" value="Login" /></td>
+					<td><input id="login"name="submit" type="submit" value="Login" /></td>
 				</tr>
 			</table>
 		</form:form>

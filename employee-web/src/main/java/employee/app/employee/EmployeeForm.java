@@ -1,11 +1,7 @@
 package employee.app.employee;
 
-import java.util.Date;
-
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
-
-import org.springframework.format.annotation.DateTimeFormat;
 
 public class EmployeeForm {
 	public static interface EmployeeCreate {
@@ -23,9 +19,7 @@ public class EmployeeForm {
     @NotNull(groups = { EmployeeCreate.class, EmployeeDelete.class })
     private String employeeName;
     
-    @NotNull(groups = { EmployeeCreate.class, EmployeeDelete.class })
-    @DateTimeFormat(pattern = "MM/dd/yyyy")
-    private Date birthdate;
+    private String birthdate;
     
     private String gender;
     
@@ -35,8 +29,7 @@ public class EmployeeForm {
     
     private String departmentId;
     
-    @DateTimeFormat(pattern = "MM/dd/yyyy")
-    private Date joinDate;
+    private String joinDate;
     
     private String positionId;
     
@@ -49,6 +42,8 @@ public class EmployeeForm {
     private String departmentName;
     
     private String positionName;
+    
+    private String searchCondition;
 
 	public String getEmployeeId() {
 		return employeeId;
@@ -85,19 +80,21 @@ public class EmployeeForm {
 
 
 
-	public Date getBirthdate() {
+
+
+	public String getBirthdate() {
 		return birthdate;
 	}
 
-	public void setBirthdate(Date birthdate) {
+	public void setBirthdate(String birthdate) {
 		this.birthdate = birthdate;
 	}
 
-	public Date getJoinDate() {
+	public String getJoinDate() {
 		return joinDate;
 	}
 
-	public void setJoinDate(Date joinDate) {
+	public void setJoinDate(String joinDate) {
 		this.joinDate = joinDate;
 	}
 
@@ -165,14 +162,22 @@ public class EmployeeForm {
 	public void setPositionName(String positionName) {
 		this.positionName = positionName;
 	}
+	
+	public String getSearchCondition() {
+		return searchCondition;
+	}
+
+	public void setSearchCondition(String searchCondition) {
+		this.searchCondition = searchCondition;
+	}
 
 	@Override
 	public String toString() {
 		return "EmployeeForm [employeeId=" + employeeId + ", employeeName=" + employeeName + ", birthdate=" + birthdate
 				+ ", gender=" + gender + ", maritalStatus=" + maritalStatus + ", levelId=" + levelId + ", departmentId="
 				+ departmentId + ", joinDate=" + joinDate + ", positionId=" + positionId + ", email=" + email
-				+ ", phone=" + phone + "]";
+				+ ", phone=" + phone + ", levelName=" + levelName + ", departmentName=" + departmentName
+				+ ", positionName=" + positionName + "]";
 	}
 
-  
 }

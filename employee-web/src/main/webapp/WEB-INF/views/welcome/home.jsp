@@ -4,25 +4,19 @@
 <meta charset="utf-8">
 <title>Home</title>
 <link rel="stylesheet"
-    href="${pageContext.request.contextPath}/resources/app/css/styles.css">
+	href="${pageContext.request.contextPath}/resources/app/css/styles.css">
+<style>
+</style>
 </head>
 
 <sec:authentication property="principal.account" var="account" />
 
 <body>
-    <div id="wrapper">
-        <p>The time on the server is ${serverTime}.</p>
-        <p>Welcome ${f:h(account.firstName)} ${f:h(account.lastName)} !!</p>
-        <p>
-            <!-- (1) -->
-            <form:form action="${pageContext.request.contextPath}/logout">
-                <button type="submit">Logout</button>
-            </form:form>
-        </p>
-        <ul>
-            <li><a href="${pageContext.request.contextPath}/account">view account</a></li>
-            <li><a href="${pageContext.request.contextPath}/employee">Employee Management</a></li>
-        </ul>
-    </div>
+	<div id="wrapper" style="text-align: center;">
+		<form:form action="${pageContext.request.contextPath}/employee">
+			<button type="submit">Employee
+				Management</button>
+		</form:form>
+	</div>
 </body>
 </html>

@@ -8,10 +8,10 @@
 		<form:hidden path="employeeName" value="${employeeForm.employeeName}" />
 		<form:hidden path="birthdate" value="${employeeForm.birthdate}" />
 		<form:hidden path="gender" value="${employeeForm.gender}" />
-		<form:hidden path="maritalStatus"
-			value="${employeeForm.maritalStatus}" />
+		<form:hidden path="maritalStatus" value="${employeeForm.maritalStatus}" />
 		<form:hidden path="levelId" value="${employeeForm.levelId}" />
 		<form:hidden path="departmentId" value="${employeeForm.departmentId}" />
+		<form:hidden path="joinDate" value="${employeeForm.joinDate}"/>
 		<form:hidden path="positionId" value="${employeeForm.positionId}" />
 		<form:hidden path="email" value="${employeeForm.email}" />
 		<form:hidden path="phone" value="${employeeForm.phone}" />
@@ -26,10 +26,7 @@
 			</tr>
 			<tr>
 				<td>Birthday (mm/dd/yyyy):</td>
-				<td><%-- <form:hidden path="birthdate" value="${employeeForm.birthdate}" /> --%>
-				<form:input path="birthdate" value="${employeeForm.birthdate}"/>
-				<%--  <fmt:formatDate value="${employeeForm.birthdate}"
-						pattern="MM/dd/yyyy" /> --%> </td>
+				<td>${employeeForm.birthdate}</td>
 			</tr>
 			<tr>
 				<td>Gender</td>
@@ -49,9 +46,7 @@
 			</tr>
 			<tr>
 				<td>Join Date (mm/dd/yyyy):</td>
-				<td><form:hidden path="joinDate" value="${employeeForm.joinDate}"/>
-				<fmt:formatDate value="${employeeForm.joinDate}"
-						pattern="MM/dd/yyyy" /></td>
+				<td>${employeeForm.joinDate}</td>
 			</tr>
 			<tr>
 				<td>Position</td>
@@ -68,5 +63,19 @@
 		</table>
 
 		<form:button>Confirm</form:button>
+	</form:form>
+	<form:form action="${pageContext.request.contextPath}/employee/registerRedo" method="post" modelAttribute="employeeForm">
+	<form:hidden path="employeeId" value="${employeeForm.employeeId}" />
+		<form:hidden path="employeeName" value="${employeeForm.employeeName}" />
+		<form:hidden path="birthdate" value="${employeeForm.birthdate}" />
+		<form:hidden path="gender" value="${employeeForm.gender}" />
+		<form:hidden path="maritalStatus" value="${employeeForm.maritalStatus}" />
+		<form:hidden path="levelId" value="${employeeForm.levelId}" />
+		<form:hidden path="departmentId" value="${employeeForm.departmentId}" />
+		<form:hidden path="joinDate" value="${employeeForm.joinDate}"/>
+		<form:hidden path="positionId" value="${employeeForm.positionId}" />
+		<form:hidden path="email" value="${employeeForm.email}" />
+		<form:hidden path="phone" value="${employeeForm.phone}" />
+		<button type="submit" style="background-color: red;">Back</button>
 	</form:form>
 </div>

@@ -1,9 +1,5 @@
 package employee.domain.model;
 
-import java.util.Date;
-
-import org.springframework.format.annotation.DateTimeFormat;
-
 public class Employee {
 
 	private static final long serialVersionUID = 1L;
@@ -12,8 +8,7 @@ public class Employee {
 
 	private String employeeName;
 
-	@DateTimeFormat(pattern = "MM/dd/yyyy")
-	private Date birthdate;
+	private String birthdate;
 	
 	private String gender;
 	
@@ -23,8 +18,7 @@ public class Employee {
 	
 	private String departmentName;
 	
-	@DateTimeFormat(pattern = "MM/dd/yyyy")
-	private Date joinDate;
+	private String joinDate;
 	
 	private String positionName;
 	
@@ -112,21 +106,19 @@ public class Employee {
 		this.phone = phone;
 	}
 
-
-
-	public Date getBirthdate() {
+	public String getBirthdate() {
 		return birthdate;
 	}
 
-	public void setBirthdate(Date birthdate) {
+	public void setBirthdate(String birthdate) {
 		this.birthdate = birthdate;
 	}
 
-	public Date getJoinDate() {
+	public String getJoinDate() {
 		return joinDate;
 	}
 
-	public void setJoinDate(Date joinDate) {
+	public void setJoinDate(String joinDate) {
 		this.joinDate = joinDate;
 	}
 
