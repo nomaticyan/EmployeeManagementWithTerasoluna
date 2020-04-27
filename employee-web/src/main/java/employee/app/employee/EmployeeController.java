@@ -4,6 +4,9 @@ import java.util.Collection;
 import javax.inject.Inject;
 import javax.validation.groups.Default;
 import org.dozer.Mapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -16,7 +19,9 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.terasoluna.gfw.common.exception.BusinessException;
 import org.terasoluna.gfw.common.message.ResultMessage;
 import org.terasoluna.gfw.common.message.ResultMessages;
+
 import employee.app.employee.EmployeeForm.EmployeeCreate;
+import employee.app.employee.EmployeeForm.EmployeeDelete;
 import employee.domain.model.Account;
 import employee.domain.model.Employee;
 import employee.domain.service.employee.EmployeeService;
@@ -39,15 +44,36 @@ public class EmployeeController {
 	EmployeeService employeeService;
 
 	@RequestMapping
-	public String view(@AuthenticationPrincipal SampleUserDetails userDetails, // (1)
-			Model model) {
-		// (2)
+	public String view(@Validated EmployeeForm employeeForm ,@AuthenticationPrincipal SampleUserDetails userDetails, // (1)
+			Model model, @PageableDefault Pageable pageable) {
 		Account account = userDetails.getAccount();
 		model.addAttribute(account);
-		Collection<Employee> employee = employeeService.findAll();
-		System.out.println("Employee Name  =" + employee.toString());
-		model.addAttribute("employees", employee);
+		Employee criteria = beanMapper.map(employeeForm,
+				Employee.class);
+		
+		Page<Employee> page = employeeService.findAll(criteria, pageable);
+		System.out.println("NumberOFElements"+page.getNumberOfElements()); 
+		System.out.println("Employee Name  =" + page.toString());
+		model.addAttribute("page", page);
 
+		return "employee/search";
+	}
+	
+	@RequestMapping(value = "findOne", method = RequestMethod.GET)
+	public String findOne(@ModelAttribute EmployeeForm employeeForm,@AuthenticationPrincipal SampleUserDetails userDetails, Model model) {
+		Account account = userDetails.getAccount();
+		model.addAttribute(account);
+		System.out.println("Search Condition is"+employeeForm.getSearchCondition());
+		if(!(employeeForm.getSearchCondition()==null)){
+			System.out.println("I am findOne");
+			Collection<Employee> employee = employeeService.search(employeeForm.getSearchCondition());
+			model.addAttribute("employees", employee);
+		}else {
+			/*
+			 * System.out.println("I am findAll"); Collection<Employee> employee =
+			 * employeeService.findAll(); model.addAttribute("employees", employee);
+			 */
+		}
 		return "employee/search";
 	}
 
@@ -72,10 +98,10 @@ public class EmployeeController {
 	public String submitForm(
 			@Validated({ Default.class,
 					EmployeeCreate.class }) @ModelAttribute("employeeForm") EmployeeForm employeeForm,
-			Model model, BindingResult bindingResult, @AuthenticationPrincipal SampleUserDetails userDetails) {
+			Model model, BindingResult bindingResult, @AuthenticationPrincipal SampleUserDetails userDetails, @PageableDefault Pageable pageable) {
 		System.out.println("Model=" + model.toString());
 		if (bindingResult.hasErrors()) {
-			return view(userDetails, model);
+			return view(employeeForm,userDetails, model, pageable);
 		}
 		if ("1".equals(employeeForm.getDepartmentId())) {
 			employeeForm.setDepartmentName("System Development");
@@ -126,14 +152,14 @@ public class EmployeeController {
 	}
 
 	@RequestMapping(value = "create", method = RequestMethod.POST)
-	public String create(Employee employeeForm, BindingResult bindingResult, Model model,
-			RedirectAttributes attributes, @AuthenticationPrincipal SampleUserDetails userDetails) {
+	public String create(EmployeeForm employeeForm, BindingResult bindingResult, Model model,
+			RedirectAttributes attributes, @AuthenticationPrincipal SampleUserDetails userDetails, @PageableDefault Pageable pageable) {
 
 		System.out.println("Employee Form is =" + employeeForm.toString());
 		System.out.println("Model is= "+model.toString());
 		System.out.println("Binding Result is ="+ bindingResult.toString());
 		if (bindingResult.hasErrors()) {
-			return view(userDetails, model);
+			return view(employeeForm, userDetails, model, pageable);
 		}
 
 		Employee employee = beanMapper.map(employeeForm, Employee.class);
@@ -143,11 +169,30 @@ public class EmployeeController {
 			employeeService.create(employee);
 		} catch (BusinessException e) {
 			model.addAttribute(e.getResultMessages());
-			return view(userDetails, model);
+			return view(employeeForm,userDetails, model, pageable);
 		}
 
 		attributes.addFlashAttribute(ResultMessages.success().add(ResultMessage.fromText("Created successfully!")));
-		return view(userDetails, model);
+		return view(employeeForm,userDetails, model, pageable);
 	}
+	
+	@RequestMapping(value = "delete", method = RequestMethod.POST) // (1)
+    public String delete(
+            @Validated({ Default.class, EmployeeDelete.class }) EmployeeForm form,
+            BindingResult bindingResult, Model model,
+            RedirectAttributes attributes, @AuthenticationPrincipal SampleUserDetails userDetails, @PageableDefault Pageable pageable) {
+		System.out.println("I am delete"+form.toString());
+
+        try {
+            employeeService.delete(form.getEmployeeId());
+        } catch (BusinessException e) {
+            model.addAttribute(e.getResultMessages());
+            return view(form, userDetails, model, pageable);
+        }
+
+        attributes.addFlashAttribute(ResultMessages.success().add(
+                ResultMessage.fromText("Deleted successfully!")));
+        return view(form, userDetails, model, pageable);
+    }
 
 }
