@@ -145,7 +145,7 @@
 		</where> 
 		</sql> -->
 
-	<select id="findPageBySearchCriteria"
+	<!-- <select id="findPageBySearchCriteria"
 		parameterType="Employee" resultMap="employeeResultMap">
 		SELECT 
 		EMPLOYEE_ID, 
@@ -182,5 +182,5 @@
 				EMPLOYEE_NAME LIKE #{employeeName} || '%' ESCAPE '~'
 			</if>
 		</where>
-	</sql>
+	</sql> -->
 </mapper>

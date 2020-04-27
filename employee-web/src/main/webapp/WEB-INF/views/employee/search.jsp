@@ -20,7 +20,6 @@
 		action="${pageContext.request.contextPath}/employee/register">
 		<button type="submit">Register</button>
 	</form:form>
-	<c:if test="${page != null}">
 		<table>
 			<tr>
 				<th>Employee Id</th>
@@ -32,9 +31,8 @@
 				<th>Ph No.</th>
 				<th>Actions</th>
 			</tr>
-			<c:forEach items="${page.content}" var="employee" varStatus="status">
+			<c:forEach items="${employees}" var="employee" varStatus="status">
 				<tr>
-				
 					<td>${employee.employeeId}</td>
 					<td>${employee.employeeName}</td>
 					<td>${employee.joinDate}</td>
@@ -61,8 +59,5 @@
 				</tr>
 			</c:forEach>
 		</table>
-    <div class="pagination">
-      <t:pagination page="${page}" criteriaQuery="${f:query(employeeForm)}" />
-    </div>
-    </c:if>
+		
 </body>
