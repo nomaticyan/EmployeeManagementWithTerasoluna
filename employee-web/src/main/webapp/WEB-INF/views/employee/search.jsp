@@ -6,7 +6,6 @@
 	href="${pageContext.request.contextPath}/resources/app/css/styles.css">
 </head>
 <body>
-
 	<h2>Search Page</h2>
 	<form:form action="${pageContext.request.contextPath}/employee/findOne"
 		method="get" modelAttribute="employeeForm" style="text-align:center">
@@ -31,7 +30,7 @@
 				<th>Ph No.</th>
 				<th>Actions</th>
 			</tr>
-			<c:forEach items="${employees}" var="employee" varStatus="status">
+			<c:forEach items="${page.content}" var="employee" varStatus="status">
 				<tr>
 					<td>${employee.employeeId}</td>
 					<td>${employee.employeeName}</td>
@@ -58,6 +57,20 @@
 						</form:form></td>
 				</tr>
 			</c:forEach>
-		</table>
-		
+ 		</table>
+		<div class="container" style="text-align:center">
+			<div class="paginationPart">
+				<t:pagination page="${page}" outerElementClass="pagination"
+					maxDisplayCount="5" criteriaQuery="${f:query(employeeForm)}" />
+			</div>
+			<div>
+				<fmt:formatNumber value="${page.totalElements}" />results
+			</div>
+			<div>
+    			<fmt:formatNumber value="${(page.number * page.size) + 1}" /> -
+    			<fmt:formatNumber value="${(page.number * page.size) + page.numberOfElements}" />
+			</div>
+			<div>${f:h(page.number + 1) }/${f:h(page.totalPages)}Pages
+			</div>
+		</div>
 </body>

@@ -1,14 +1,15 @@
 package employee.domain.repository.employee;
 
-import java.util.Collection;
-
+import java.util.List;
+import org.apache.ibatis.annotations.Param;
+import org.springframework.data.domain.Pageable;
 import employee.domain.model.Employee;
 
 
 public interface EmployeeRepository {
-	Collection<Employee> search(String employeeId);
+	List<Employee> search(@Param("pageable") Pageable pageable,@Param("searchCondition") String searchCondition );
 
-    Collection<Employee> findAll();
+    List<Employee> findAll(@Param("pageable") Pageable pageable);
     
     Employee findOne(String todoId);
 
@@ -17,6 +18,8 @@ public interface EmployeeRepository {
     boolean update(Employee todo);
 
     void delete(String employeeId);
+
+	long count();
     
-    
+	long countById(@Param("searchCondition") String employeeId);
 }

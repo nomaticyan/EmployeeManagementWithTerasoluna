@@ -19,11 +19,10 @@
 		<result property="email" column="email" />
 		<result property="phone" column="phone" />
 	</resultMap>
-
-	<select id="search" parameterType="string"
-		resultMap="employeeResultMap">
+	
+	<select id="search" parameterType="string" resultMap="employeeResultMap">
     <![CDATA[
-        SELECT 
+	SELECT 
 		EMPLOYEE_ID, 
 		EMPLOYEE_NAME, 
 		BIRTHDATE, GENDER, 
@@ -36,11 +35,17 @@
 		PHONE FROM EMPLOYEE AS Emp
 		INNER JOIN JAPANESE_LEVEL AS Jap ON Emp.LEVEL_ID = Jap.LEVEL_ID 
 		INNER JOIN DEPARTMENT AS Dep ON Emp.DEPARTMENT_ID = Dep.DEPARTMENT_ID
-		INNER JOIN POSITION AS Pos ON Emp.POSITION_ID = Pos.POSITION_ID 
-		where employee_id = #{employeeId} 
-		OR employee_name = #{employeeName}
+		INNER JOIN POSITION AS Pos ON Emp.POSITION_ID = Pos.POSITION_ID
+		where employee_id = #{searchCondition}
+		OR employee_name = #{searchCondition} 
+		ORDER BY
+		Emp.EMPLOYEE_ID
+		LIMIT
+		10
+		OFFSET
+		0
 		;
-    ]]>
+	]]>
 	</select>
 
 	<select id="findOne" parameterType="string"
@@ -79,7 +84,14 @@
 		PHONE FROM EMPLOYEE AS Emp
 		INNER JOIN JAPANESE_LEVEL AS Jap ON Emp.LEVEL_ID = Jap.LEVEL_ID 
 		INNER JOIN DEPARTMENT AS Dep ON Emp.DEPARTMENT_ID = Dep.DEPARTMENT_ID
-		INNER JOIN POSITION AS Pos ON Emp.POSITION_ID = Pos.POSITION_ID;
+		INNER JOIN POSITION AS Pos ON Emp.POSITION_ID = Pos.POSITION_ID
+		ORDER BY
+		Emp.EMPLOYEE_ID
+		LIMIT
+		#{pageable.pageSize}
+		OFFSET
+		#{pageable.offset}
+		;
 
     ]]>
 	</select>
@@ -121,66 +133,24 @@
             employee_id = #{employeeId}
     ]]>
 	</delete>
-
-	<!-- <select id="findPage" resultType="Employee"> 
-	SELECT * FROM employee 
-		<include refid="wherePhrase">
-		</include> ORDER BY employee_id LIMIT #{pageable.pageSize} 
-		OFFSET #{pageable.offset} 
-		</select> 
-		
-		<select id="countBySearchList" resultType="long"> 
-		SELECT count(*) FROM employee 
-		<include refid="wherePhrase"></include> 
-		</select> 
-		
-		<sql id="wherePhrase"> 
-		<where> 
-		<if test="criteria.employeeId != ''"> 
-		employee_id LIKE #{criteria.employeeId} || '%' ESCAPE '~' 
-		</if> 
-		<if test="criteria.employeeName != ''"> 
-		employee_name LIKE #{criteria.employeeName} || '%' ESCAPE '~' 
-		</if> 
-		</where> 
-		</sql> -->
-
-	<!-- <select id="findPageBySearchCriteria"
-		parameterType="Employee" resultMap="employeeResultMap">
-		SELECT 
-		EMPLOYEE_ID, 
-		EMPLOYEE_NAME, 
-		BIRTHDATE, GENDER, 
-		MARITAL_STATUS, 
-		LEVEL_NAME, 
-		DEPARTMENT_NAME, 
-		JOIN_DATE, 
-		POSITION_NAME, 
-		EMAIL, 
-		PHONE FROM EMPLOYEE AS Emp
-		INNER JOIN JAPANESE_LEVEL AS Jap ON Emp.LEVEL_ID = Jap.LEVEL_ID 
-		INNER JOIN DEPARTMENT AS Dep ON Emp.DEPARTMENT_ID = Dep.DEPARTMENT_ID
-		INNER JOIN POSITION AS Pos ON Emp.POSITION_ID = Pos.POSITION_ID;
-		ORDER BY
-		Emp.employee_id DESC
+	
+	<select id="countById"
+		parameterType="string"  resultType="long">
+	<![CDATA[	
+		SELECT
+		COUNT(*)
+		FROM
+		employee
+		where employee_id = #{searchCondition} 
+		OR employee_name = #{searchCondition}
+		;
+	]]>	
 	</select>
-
-	<select id="countBySearchCriteria"
-		parameterType="Employee" resultType="_long">
+	
+	<select id="count" resultType="_long">
 		SELECT
 		COUNT(*)
 		FROM
 		employee
 	</select>
-
-	<sql id="findPageBySearchCriteriaWherePhrase">
-        <where>
-        	<if test="employeeId != ''">
-        		EMPLOYEE_ID LIKE #{employeeId} || '%' ESCAPE '~'
-			</if>
-			<if test="employeeName != ''">
-				EMPLOYEE_NAME LIKE #{employeeName} || '%' ESCAPE '~'
-			</if>
-		</where>
-	</sql> -->
 </mapper>

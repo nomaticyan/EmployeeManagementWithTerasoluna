@@ -1,16 +1,17 @@
 package employee.domain.service.employee;
 
-import java.util.Collection;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import employee.domain.model.Employee;
 
 public interface EmployeeService {
 
-    Collection<Employee> findAll();
+    Page<Employee> findAll(Pageable pageable);
     
-    Collection<Employee> search(String todoId);
+    Page<Employee> search(String searchCondition,Pageable pageable);
     
-    Employee findOne(String todoId);
+    Employee findOne(String employeeId);
 
     Employee create(Employee emp);
 
@@ -18,6 +19,6 @@ public interface EmployeeService {
 
     void delete(String employeeId);
 
-
+    public long count();
 
 }

@@ -1,9 +1,11 @@
 package employee.app.employee;
 
-import java.util.Collection;
 import javax.inject.Inject;
 import javax.validation.groups.Default;
 import org.dozer.Mapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -16,7 +18,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.terasoluna.gfw.common.exception.BusinessException;
 import org.terasoluna.gfw.common.message.ResultMessage;
 import org.terasoluna.gfw.common.message.ResultMessages;
-
 import employee.app.employee.EmployeeForm.EmployeeCreate;
 import employee.app.employee.EmployeeForm.EmployeeDelete;
 import employee.domain.model.Account;
@@ -40,31 +41,21 @@ public class EmployeeController {
 	@Inject
 	EmployeeService employeeService;
 
-	@RequestMapping
-	public String view(@AuthenticationPrincipal SampleUserDetails userDetails, // (1)
-			Model model) {
-		Account account = userDetails.getAccount();
-		model.addAttribute(account);
-		Collection<Employee> employee = employeeService.findAll();
-		System.out.println("Employee Name  =" + employee.toString());
-		model.addAttribute("employees", employee);
-
+	@RequestMapping({"", "/"})
+	public String view(Model model,@PageableDefault(size = 10) Pageable pageable) {
+		Page<Employee> result = employeeService.findAll(pageable);
+	    model.addAttribute("page", result);
 		return "employee/search";
 	}
 	
-	@RequestMapping(value = "findOne", method = RequestMethod.GET)
-	public String findOne(@ModelAttribute EmployeeForm employeeForm,@AuthenticationPrincipal SampleUserDetails userDetails, Model model) {
-		Account account = userDetails.getAccount();
-		model.addAttribute(account);
-		System.out.println("Search Condition is"+employeeForm.getSearchCondition());
+	@RequestMapping(value = "findOne", method = { RequestMethod.POST, RequestMethod.GET })
+	public String findOne(@ModelAttribute EmployeeForm employeeForm,Model model,@PageableDefault(size = 10) Pageable pageable) {
 		if(!(employeeForm.getSearchCondition().isEmpty())){
-			System.out.println("I am findOne");
-			Collection<Employee> employee = employeeService.search(employeeForm.getSearchCondition());
-			model.addAttribute("employees", employee);
+			Page<Employee> employee = employeeService.search(employeeForm.getSearchCondition(), pageable);
+			model.addAttribute("page", employee);
 		}else {
-			System.out.println("I am findAll");
-			Collection<Employee> employee = employeeService.findAll();
-			model.addAttribute("employees", employee);
+			Page<Employee> employee = employeeService.findAll(pageable);
+			model.addAttribute("page", employee);
 		}
 		return "employee/search";
 	}
@@ -78,22 +69,17 @@ public class EmployeeController {
 	}
 	
 	@RequestMapping(value = "registerRedo", method = RequestMethod.POST)
-	public String registerRedo(@ModelAttribute("employeeForm") EmployeeForm employeeForm,@AuthenticationPrincipal SampleUserDetails userDetails, Model model) {
-		Account account = userDetails.getAccount();
-		model.addAttribute(account);
+	public String registerRedo(@ModelAttribute("employeeForm") EmployeeForm employeeForm, Model model) {
 		System.out.println("EmployeeForm="+ employeeForm.toString());
 		model.addAttribute("employeeForm",employeeForm);
 		return "employee/register";
 	}
 
 	@RequestMapping(value = "/confirmForm", method = RequestMethod.POST)
-	public String submitForm(
-			@Validated({ Default.class,
-					EmployeeCreate.class }) @ModelAttribute("employeeForm") EmployeeForm employeeForm,
-			Model model, BindingResult bindingResult, @AuthenticationPrincipal SampleUserDetails userDetails) {
-		System.out.println("Model=" + model.toString());
+	public String submitForm(@Validated({ Default.class,EmployeeCreate.class }) @ModelAttribute("employeeForm") EmployeeForm employeeForm,
+			Model model, BindingResult bindingResult, @PageableDefault(size = 10) Pageable pageable) {
 		if (bindingResult.hasErrors()) {
-			return view(userDetails, model);
+			return view(model,pageable);
 		}
 		if ("1".equals(employeeForm.getDepartmentId())) {
 			employeeForm.setDepartmentName("System Development");
@@ -143,48 +129,44 @@ public class EmployeeController {
 		return "employee/confirm";
 	}
 
-	@RequestMapping(value = "create", method = RequestMethod.POST)
+	@RequestMapping(value = "create", method = { RequestMethod.POST, RequestMethod.GET })
 	public String create(Employee employeeForm, BindingResult bindingResult, Model model,
-			RedirectAttributes attributes, @AuthenticationPrincipal SampleUserDetails userDetails) {
-
-		System.out.println("Employee Form is =" + employeeForm.toString());
-		System.out.println("Model is= "+model.toString());
-		System.out.println("Binding Result is ="+ bindingResult.toString());
+			RedirectAttributes attributes, @PageableDefault(size = 10) Pageable pageable) {
 		if (bindingResult.hasErrors()) {
-			return view(userDetails, model);
+			return view(model, pageable);
 		}
-
 		Employee employee = beanMapper.map(employeeForm, Employee.class);
-		System.out.println("Employee is ="+ employee.toString());
 		model.addAttribute("employees", employee);
 		try {
 			employeeService.create(employee);
 		} catch (BusinessException e) {
 			model.addAttribute(e.getResultMessages());
-			return view(userDetails, model);
+			return view(model, pageable);
 		}
-
+		
 		attributes.addFlashAttribute(ResultMessages.success().add(ResultMessage.fromText("Created successfully!")));
-		return view(userDetails, model);
+		
+		return "employee/complete";
 	}
 	
-	@RequestMapping(value = "delete", method = RequestMethod.POST) // (1)
+	@RequestMapping(value = "delete", method = RequestMethod.POST)
     public String delete(
             @Validated({ Default.class, EmployeeDelete.class }) EmployeeForm form,
             BindingResult bindingResult, Model model,
-            RedirectAttributes attributes, @AuthenticationPrincipal SampleUserDetails userDetails) {
+            RedirectAttributes attributes, @PageableDefault(size = 10) Pageable pageable) {
 		System.out.println("I am delete"+form.toString());
 
         try {
             employeeService.delete(form.getEmployeeId());
         } catch (BusinessException e) {
             model.addAttribute(e.getResultMessages());
-            return view(userDetails, model);
+            return view(model, pageable);
         }
 
         attributes.addFlashAttribute(ResultMessages.success().add(
                 ResultMessage.fromText("Deleted successfully!")));
-        return view(userDetails, model);
+        
+        return view(model, pageable);
     }
 	
 

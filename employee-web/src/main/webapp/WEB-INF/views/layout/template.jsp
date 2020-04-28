@@ -17,6 +17,9 @@
 <title><spring:message code="${titleKey}" text="employee" /></title>
 <link rel="stylesheet"
     href="${pageContext.request.contextPath}/resources/app/css/styles.css">
+<link rel="stylesheet"
+    href="${pageContext.request.contextPath}/resources/vendor/bootstrap-3.0.0/css/bootstrap.css"
+    type="text/css" media="screen, projection">    
 <style>
 button {
 	border-radius: 12px;
@@ -31,6 +34,14 @@ button {
 	height: 40px;
 	width: 100px;
 }
+.pagination li {
+    display: inline;
+}
+
+.pagination li>a {
+    margin-left: 10px;
+}
+
 </style>    
 </head>
 <body>

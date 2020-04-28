@@ -1,12 +1,15 @@
 package employee.domain.service.employee;
 
-import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+
 import javax.inject.Inject;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.terasoluna.gfw.common.exception.ResourceNotFoundException;
-import org.terasoluna.gfw.common.message.ResultMessage;
-import org.terasoluna.gfw.common.message.ResultMessages;
 import employee.domain.model.Employee;
 import employee.domain.repository.employee.EmployeeRepository;
 
@@ -19,21 +22,34 @@ public class EmployeeServiceImpl implements EmployeeService {
     
     @Override
     @Transactional(readOnly = true) 
-    public Collection<Employee> findAll() {
-        return employeeRepository.findAll();
+    public Page<Employee> findAll(Pageable pageable) {
+    	Long total = employeeRepository.count();
+    	List<Employee> content;
+    	if (total > 0) {
+			content = employeeRepository.findAll(pageable);
+		}
+		else {
+			content = Collections.emptyList();
+		}
+		Page<Employee> page = new PageImpl<>(content, pageable, total);
+		return page;
     }
     
     @Override
-    public Collection<Employee> search(String employeeId) {
-    	Collection<Employee> todo = employeeRepository.search(employeeId);
-        if (todo == null) {
-            ResultMessages messages = ResultMessages.error();
-            messages.add(ResultMessage
-                    .fromText("[E404] The requested Todo is not found. (id="
-                            + employeeId + ")"));
-            throw new ResourceNotFoundException(messages);
-        }
-        return todo;
+    public Page<Employee> search(String searchCondition,Pageable pageable) {
+    	System.out.println("Page size is" + pageable.getPageSize());
+    	System.out.println("Offset is" + pageable.getOffset());
+    	Long total = employeeRepository.countById(searchCondition);
+    	System.out.println("Total is ="+ total);
+    	List<Employee> content;
+    	if (total > 0) {
+			content = employeeRepository.search(pageable,searchCondition);
+		}
+		else {
+			content = Collections.emptyList();
+		}
+		Page<Employee> page = new PageImpl<>(content, pageable, total);
+		return page;
     }
 
 	@Override
@@ -58,6 +74,10 @@ public class EmployeeServiceImpl implements EmployeeService {
 	@Override
 	public Employee findOne(String employeeId) {
 		return employeeRepository.findOne(employeeId);
+	}
+	
+	public long count() {
+	    return employeeRepository.count();
 	}
 
 
