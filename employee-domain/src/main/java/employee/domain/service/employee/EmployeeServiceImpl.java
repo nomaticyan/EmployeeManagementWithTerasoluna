@@ -80,6 +80,15 @@ public class EmployeeServiceImpl implements EmployeeService {
 	    return employeeRepository.count();
 	}
 
+	@Override
+	public UploadFileInfo createFile(UploadFileInfo file) {
+		employeeRepository.createFile(file);
+        /* REMOVE THIS LINE IF YOU USE JPA
+            todoRepository.save(todo); // 10
+           REMOVE THIS LINE IF YOU USE JPA */
+		return file;
+	}
+
 
 
 }

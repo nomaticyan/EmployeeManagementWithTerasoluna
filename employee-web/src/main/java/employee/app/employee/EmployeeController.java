@@ -1,28 +1,60 @@
 package employee.app.employee;
 
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.inject.Inject;
 import javax.validation.groups.Default;
 import org.dozer.Mapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.StringUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.terasoluna.gfw.common.exception.BusinessException;
 import org.terasoluna.gfw.common.message.ResultMessage;
 import org.terasoluna.gfw.common.message.ResultMessages;
+import org.terasoluna.gfw.web.token.transaction.TransactionTokenCheck;
+import org.terasoluna.gfw.web.token.transaction.TransactionTokenContext;
+import org.terasoluna.gfw.web.token.transaction.TransactionTokenType;
+
 import employee.app.employee.EmployeeForm.EmployeeCreate;
 import employee.app.employee.EmployeeForm.EmployeeDelete;
+import employee.app.employee.FileUploadForm.FileUpload;
+import employee.app.employee.FileUploadForm.SingleFileUpload;
 import employee.domain.model.Account;
 import employee.domain.model.Employee;
+import employee.domain.service.employee.DirectUploadFileInfo;
+import employee.domain.service.employee.DirectUploadService;
 import employee.domain.service.employee.EmployeeService;
+import employee.domain.service.employee.UploadFileInfo;
 import employee.domain.service.userdetails.SampleUserDetails;
 
 @Controller
@@ -32,28 +64,47 @@ public class EmployeeController {
 	@Inject
 	Mapper beanMapper;
 
+	@Value("${app.upload.saveDir}")
+	private File uploadSaveDir;
+
+	@Inject
+	private DirectUploadService directUploadService;
+
 	@ModelAttribute
 	public EmployeeForm setUpForm() {
 		EmployeeForm form = new EmployeeForm();
 		return form;
 	}
 
+	// (1)
+	@ModelAttribute
+	public FileUploadForm setFileUploadForm() {
+		return new FileUploadForm();
+	}
+
 	@Inject
 	EmployeeService employeeService;
 
-	@RequestMapping({"", "/"})
-	public String view(Model model,@PageableDefault(size = 10) Pageable pageable) {
+	@RequestMapping({ "", "/" })
+	public String view(Model model, @PageableDefault(size = 10) Pageable pageable) {
 		Page<Employee> result = employeeService.findAll(pageable);
-	    model.addAttribute("page", result);
+		model.addAttribute("page", result);
 		return "employee/search";
 	}
-	
+
+	@RequestMapping(value = "upload", method = RequestMethod.POST)
+	public String uploadForm(EmployeeForm employeeForm, Model model) {
+		model.addAttribute("employeeId", employeeForm.getEmployeeId());
+		return "employee/uploadForm";
+	}
+
 	@RequestMapping(value = "findOne", method = { RequestMethod.POST, RequestMethod.GET })
-	public String findOne(@ModelAttribute EmployeeForm employeeForm,Model model,@PageableDefault(size = 10) Pageable pageable) {
-		if(!(employeeForm.getSearchCondition().isEmpty())){
+	public String findOne(@ModelAttribute EmployeeForm employeeForm, Model model,
+			@PageableDefault(size = 10) Pageable pageable) {
+		if (!(employeeForm.getSearchCondition().isEmpty())) {
 			Page<Employee> employee = employeeService.search(employeeForm.getSearchCondition(), pageable);
 			model.addAttribute("page", employee);
-		}else {
+		} else {
 			Page<Employee> employee = employeeService.findAll(pageable);
 			model.addAttribute("page", employee);
 		}
@@ -65,21 +116,25 @@ public class EmployeeController {
 		Account account = userDetails.getAccount();
 		model.addAttribute(account);
 		model.addAttribute("employeeForm", new EmployeeForm());
+		model.addAttribute("screenTitle", "Register Screen");
+		model.addAttribute("buttonTitle", "Register");
 		return "employee/register";
 	}
-	
+
 	@RequestMapping(value = "registerRedo", method = RequestMethod.POST)
 	public String registerRedo(@ModelAttribute("employeeForm") EmployeeForm employeeForm, Model model) {
-		System.out.println("EmployeeForm="+ employeeForm.toString());
-		model.addAttribute("employeeForm",employeeForm);
+		System.out.println("EmployeeForm=" + employeeForm.toString());
+		model.addAttribute("employeeForm", employeeForm);
 		return "employee/register";
 	}
 
 	@RequestMapping(value = "/confirmForm", method = RequestMethod.POST)
-	public String submitForm(@Validated({ Default.class,EmployeeCreate.class }) @ModelAttribute("employeeForm") EmployeeForm employeeForm,
+	public String submitForm(
+			@Validated({ Default.class,
+					EmployeeCreate.class }) @ModelAttribute("employeeForm") EmployeeForm employeeForm,
 			Model model, BindingResult bindingResult, @PageableDefault(size = 10) Pageable pageable) {
 		if (bindingResult.hasErrors()) {
-			return view(model,pageable);
+			return view(model, pageable);
 		}
 		if ("1".equals(employeeForm.getDepartmentId())) {
 			employeeForm.setDepartmentName("System Development");
@@ -124,16 +179,32 @@ public class EmployeeController {
 			employeeForm.setPositionName("Senior HR");
 		}
 		model.addAttribute("employeeForm", employeeForm);
-		System.out.println("employeeForm=" + employeeForm.toString());
-
+		Page<Employee> employee = employeeService.search(employeeForm.getEmployeeId(), pageable);
+		System.out.println("Employee =" + employee.getContent());
+		if (employee.getContent().isEmpty()) {
+			model.addAttribute("screenTitle", "Register Confirm Screen");
+			model.addAttribute("buttonTitle", "Register Confirm");
+		} else {
+			model.addAttribute("screenTitle", "Edit Confirm Screen");
+			model.addAttribute("buttonTitle", "Edit Confirm");
+		}
 		return "employee/confirm";
 	}
 
 	@RequestMapping(value = "create", method = { RequestMethod.POST, RequestMethod.GET })
-	public String create(Employee employeeForm, BindingResult bindingResult, Model model,
-			RedirectAttributes attributes, @PageableDefault(size = 10) Pageable pageable) {
+	public String create(Employee employeeForm, BindingResult bindingResult, Model model, RedirectAttributes attributes,
+			@PageableDefault(size = 10) Pageable pageable) {
 		if (bindingResult.hasErrors()) {
 			return view(model, pageable);
+		}
+		Page<Employee> employeeSearch = employeeService.search(employeeForm.getEmployeeId(), pageable);
+		System.out.println("Employee =" + employeeSearch.getContent());
+		if (employeeSearch.getContent().isEmpty()) {
+			model.addAttribute("screenTitle", "Register Complete Screen");
+			model.addAttribute("textTitle", "Successfully Registered.");
+		} else {
+			model.addAttribute("screenTitle", "Edit Complete Screen");
+			model.addAttribute("textTitle", "Successfully Edited.");
 		}
 		Employee employee = beanMapper.map(employeeForm, Employee.class);
 		model.addAttribute("employees", employee);
@@ -143,31 +214,70 @@ public class EmployeeController {
 			model.addAttribute(e.getResultMessages());
 			return view(model, pageable);
 		}
-		
+
 		attributes.addFlashAttribute(ResultMessages.success().add(ResultMessage.fromText("Created successfully!")));
-		
+
 		return "employee/complete";
 	}
-	
+
 	@RequestMapping(value = "delete", method = RequestMethod.POST)
-    public String delete(
-            @Validated({ Default.class, EmployeeDelete.class }) EmployeeForm form,
-            BindingResult bindingResult, Model model,
-            RedirectAttributes attributes, @PageableDefault(size = 10) Pageable pageable) {
-		System.out.println("I am delete"+form.toString());
+	public String delete(@Validated({ Default.class, EmployeeDelete.class }) EmployeeForm form,
+			BindingResult bindingResult, Model model, RedirectAttributes attributes,
+			@PageableDefault(size = 10) Pageable pageable) {
+		System.out.println("I am delete" + form.toString());
 
-        try {
-            employeeService.delete(form.getEmployeeId());
-        } catch (BusinessException e) {
-            model.addAttribute(e.getResultMessages());
-            return view(model, pageable);
-        }
+		try {
+			employeeService.delete(form.getEmployeeId());
+		} catch (BusinessException e) {
+			model.addAttribute(e.getResultMessages());
+			return view(model, pageable);
+		}
 
-        attributes.addFlashAttribute(ResultMessages.success().add(
-                ResultMessage.fromText("Deleted successfully!")));
-        
-        return view(model, pageable);
-    }
-	
+		attributes.addFlashAttribute(ResultMessages.success().add(ResultMessage.fromText("Deleted successfully!")));
+
+		return view(model, pageable);
+	}
+
+	@RequestMapping(value = "edit", method = RequestMethod.POST)
+	public String edit(EmployeeForm employeeForm, BindingResult bindingResult, Model model) {
+
+		System.out.println("level Id is " + employeeForm.getLevelId());
+
+		model.addAttribute("employeeForm", employeeForm);
+		model.addAttribute("screenTitle", "Edit Screen");
+		model.addAttribute("buttonTitle", "Edit");
+		return "employee/register";
+	}
+
+	@RequestMapping(value = "uploadFile", method = RequestMethod.POST)
+	public String uploadFile(
+			@Validated({ SingleFileUpload.class, FileUpload.class, Default.class }) FileUploadForm form,
+			BindingResult result, RedirectAttributes redirectAttributes) throws IOException {
+		// (8)
+		if (result.hasErrors()) {
+			return "employee/uploadForm";
+		}
+		String fileName = form.getEmployeeId() + form.getDescription();
+		form.setFileId(fileName);
+		form.setFileName(fileName);
+		// save file.
+		MultipartFile multipartFile = form.getFile();
+		System.out.println("File Name is " + multipartFile.getOriginalFilename());
+		directUploadService.saveFile(multipartFile.getInputStream(), fileName, form.getDescription(),
+				form.getEmployeeId());
+
+		redirectAttributes.addFlashAttribute(ResultMessages.success().add("i.xx.at.0001"));
+		System.out.println("File Name" + form.getFileName());
+		System.out.println("uploaded file info=" + form.getFileId());
+		return "employee/uploadConfirm";
+	}
+
+	@RequestMapping(value = "employeeDetails", method = RequestMethod.GET)
+	public String details(String employeeId, Model model, @PageableDefault(size = 10) Pageable pageable) {
+		System.out.println("I am here" + employeeId);
+		model.addAttribute("screenTitle", "Employee Details Screen");
+		model.addAttribute("employeeId", employeeId);
+		return "employee/employeeDetails";
+	}
 
 }

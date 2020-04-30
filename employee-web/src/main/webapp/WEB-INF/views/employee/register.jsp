@@ -1,4 +1,4 @@
-<h2>Register Screen</h2>
+<h2>${screenTitle}</h2>
 <div id="employeeForm">
 	<t:messagesPanel />
 
@@ -9,21 +9,21 @@
 			<tr>
 				<td>Employee ID</td>
 				<td>
-					<form:input path="employeeId" value="${employeeForm.employeeId}"/> 
+					<form:input path="employeeId" value="${employee.employeeId}"/> 
 					<form:errors path="employeeId" cssClass="text-error" />
 				</td>
 			</tr>
 			<tr>
 				<td>Employee Name</td>
 				<td>
-					<form:input path="employeeName" /> 
+					<form:input path="employeeName" value="${employee.employeeName}"/> 
 					<form:errors path="employeeName" cssClass="text-error" />
 				</td>
 			</tr>
 			<tr>
-				<td>Birthday (mm/dd/yyyy):</td>
+				<td>Birthday (yyyy-mm-dd):</td>
 				<td>
-					<form:input path="birthdate" /> 
+					<form:input path="birthdate" value="${employee.birthdate}"/> 
 					<form:errors path="birthdate" cssClass="text-error" />
 				</td>
 			</tr>
@@ -61,7 +61,7 @@
 			<tr>
 				<td>Department</td>
 				<td>
-					<form:select path="departmentId">
+					<form:select path="departmentId" value="${employee.departmentId}">
 						<form:option value="" />
 						<form:option value="1" label="System Development" />
 						<form:option value="2" label="Infra" />
@@ -71,7 +71,7 @@
 				</td>
 			</tr>
 			<tr>
-				<td>Join Date (mm/dd/yyyy):</td>
+				<td>Join Date (yyyy-mm-dd):</td>
 				<td>
 					<form:input path="joinDate" />
 				</td>
@@ -108,8 +108,7 @@
 				</td>
 			</tr>
 		</table>
-		<form:button>Register</form:button>
-		
+		<form:button>${buttonTitle}</form:button>
 	</form:form>
 	
 	<form:form action="${pageContext.request.contextPath}/employee">

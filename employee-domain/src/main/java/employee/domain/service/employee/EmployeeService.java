@@ -14,6 +14,8 @@ public interface EmployeeService {
     Employee findOne(String employeeId);
 
     Employee create(Employee emp);
+    
+    UploadFileInfo createFile(UploadFileInfo file);
 
     Employee finish(String employeeId);
 
