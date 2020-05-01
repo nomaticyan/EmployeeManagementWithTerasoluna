@@ -1,4 +1,4 @@
-<h2>Register Confirm Screen</h2>
+<h2>${screenTitle}</h2>
 <div id="employee">
 	<t:messagesPanel />
 
@@ -62,7 +62,7 @@
 			</tr>
 		</table>
 
-		<form:button>Confirm</form:button>
+		<form:button>${buttonTitle}</form:button>
 	</form:form>
 	<form:form action="${pageContext.request.contextPath}/employee/registerRedo" method="post" modelAttribute="employeeForm">
 	<form:hidden path="employeeId" value="${employeeForm.employeeId}" />

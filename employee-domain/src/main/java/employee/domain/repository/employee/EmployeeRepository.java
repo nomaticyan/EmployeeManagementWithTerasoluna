@@ -4,6 +4,7 @@ import java.util.List;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.data.domain.Pageable;
 import employee.domain.model.Employee;
+import employee.domain.service.employee.UploadFileInfo;
 
 
 public interface EmployeeRepository {
@@ -14,6 +15,8 @@ public interface EmployeeRepository {
     Employee findOne(String todoId);
 
     void create(Employee todo);
+    
+    void createFile(UploadFileInfo todo);
 
     boolean update(Employee todo);
 

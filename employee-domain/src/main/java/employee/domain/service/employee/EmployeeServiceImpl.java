@@ -17,47 +17,39 @@ import employee.domain.repository.employee.EmployeeRepository;
 @Transactional
 public class EmployeeServiceImpl implements EmployeeService {
 
-    @Inject
-    EmployeeRepository employeeRepository;
-    
-    @Override
-    @Transactional(readOnly = true) 
-    public Page<Employee> findAll(Pageable pageable) {
-    	Long total = employeeRepository.count();
-    	List<Employee> content;
-    	if (total > 0) {
+	@Inject
+	EmployeeRepository employeeRepository;
+
+	@Override
+	@Transactional(readOnly = true)
+	public Page<Employee> findAll(Pageable pageable) {
+		Long total = employeeRepository.count();
+		List<Employee> content;
+		if (total > 0) {
 			content = employeeRepository.findAll(pageable);
-		}
-		else {
+		} else {
 			content = Collections.emptyList();
 		}
 		Page<Employee> page = new PageImpl<>(content, pageable, total);
 		return page;
-    }
-    
-    @Override
-    public Page<Employee> search(String searchCondition,Pageable pageable) {
-    	System.out.println("Page size is" + pageable.getPageSize());
-    	System.out.println("Offset is" + pageable.getOffset());
-    	Long total = employeeRepository.countById(searchCondition);
-    	System.out.println("Total is ="+ total);
-    	List<Employee> content;
-    	if (total > 0) {
-			content = employeeRepository.search(pageable,searchCondition);
-		}
-		else {
+	}
+
+	@Override
+	public Page<Employee> search(String searchCondition, Pageable pageable) {
+		Long total = employeeRepository.countById(searchCondition);
+		List<Employee> content;
+		if (total > 0) {
+			content = employeeRepository.search(pageable, searchCondition);
+		} else {
 			content = Collections.emptyList();
 		}
 		Page<Employee> page = new PageImpl<>(content, pageable, total);
 		return page;
-    }
+	}
 
 	@Override
 	public Employee create(Employee emp) {
 		employeeRepository.create(emp);
-        /* REMOVE THIS LINE IF YOU USE JPA
-            todoRepository.save(todo); // 10
-           REMOVE THIS LINE IF YOU USE JPA */
 		return emp;
 	}
 
@@ -75,11 +67,15 @@ public class EmployeeServiceImpl implements EmployeeService {
 	public Employee findOne(String employeeId) {
 		return employeeRepository.findOne(employeeId);
 	}
-	
+
 	public long count() {
-	    return employeeRepository.count();
+		return employeeRepository.count();
 	}
 
-
+	@Override
+	public UploadFileInfo createFile(UploadFileInfo file) {
+		employeeRepository.createFile(file);
+		return file;
+	}
 
 }

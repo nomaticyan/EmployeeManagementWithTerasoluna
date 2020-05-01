@@ -39,13 +39,31 @@
 					<td>${employee.positionName}</td>
 					<td>${employee.email}</td>
 					<td>${employee.phone}</td>
-					<td><form:form action="#" method="post"
+					<td>
+						<form:form action="${pageContext.request.contextPath}/upload/multiple" method="post"
 							modelAttribute="employeeForm" cssStyle="display: inline-block;">
+							<form:hidden path="employeeId" value="${employee.employeeId}" />
 							<form:button>Upload</form:button>
-						</form:form> <form:form action="#" method="post" modelAttribute="employeeForm"
+						</form:form> 
+						
+						<form:form action="${pageContext.request.contextPath}/employee/edit"
+						method="post" modelAttribute="employeeForm"
 							cssStyle="display: inline-block;">
+							<form:hidden path="employeeId" value="${employee.employeeId}" />
+							<form:hidden path="employeeName" value="${employee.employeeName}" />
+							<form:hidden path="birthdate" value="${employee.birthdate}" />
+							<form:hidden path="gender" value="${employee.gender}" />
+							<form:hidden path="maritalStatus" value="${employee.maritalStatus}" />
+							<form:hidden path="levelId" value="${employee.levelId}" />
+							<form:hidden path="departmentId" value="${employee.departmentId}" />
+							<form:hidden path="joinDate" value="${employee.joinDate}"/>
+							<form:hidden path="positionId" value="${employee.positionId}" />
+							<form:hidden path="email" value="${employee.email}" />
+							<form:hidden path="phone" value="${employee.phone}" />
 							<form:button>Edit</form:button>
-						</form:form> <form:form
+						</form:form> 
+						
+						<form:form
 							action="${pageContext.request.contextPath}/employee/delete"
 							method="post" modelAttribute="employeeForm"
 							cssStyle="display: inline-block;">
@@ -54,7 +72,8 @@
 							<form:hidden path="employeeName"
 								value="${f:h(employee.employeeName)}" />
 							<form:button style="background-color: red;">Delete</form:button>
-						</form:form></td>
+						</form:form>
+						</td>
 				</tr>
 			</c:forEach>
  		</table>

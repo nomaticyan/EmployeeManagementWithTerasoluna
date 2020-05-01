@@ -36,6 +36,7 @@
         <property name="exceptionMappings">
             <map>
                 <entry key="ResourceNotFoundException" value="e.xx.fw.5001" />
+                <entry key="MultipartException" value="e.xx.fw.6001" />
                 <entry key="InvalidTransactionTokenException" value="e.xx.fw.7001" />
                 <entry key="BusinessException" value="e.xx.fw.8001" />
                 <entry key=".DataAccessException" value="e.xx.fw.9002" />
@@ -54,6 +55,17 @@
     <bean id="exceptionLoggingFilter"
         class="org.terasoluna.gfw.web.exception.ExceptionLoggingFilter" >
         <property name="exceptionLogger" ref="exceptionLogger" />
+    </bean>
+    
+    <bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+
+		 <!-- setting maximum upload size -->
+		<property name="maxUploadSize" value="100000" />
+
+	</bean>
+	
+	<bean id="uploadTmpFileCleaner" class="employee.domain.model.FileCleaner">
+        <property name="targetDirectory" value="${app.upload.tmpDir}" />
     </bean>
 
 </beans>
